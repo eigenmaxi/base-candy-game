@@ -22,6 +22,13 @@
       </div>
     </div>
 
+    <!-- Countdown Overlay -->
+    <div id="countdownOverlay" class="hidden">
+      <div class="countdown-content">
+        <div id="countdownNumber">3</div>
+      </div>
+    </div>
+
     <!-- Game Screen -->
     <div id="gameBoardContainer" class="hidden">
       <div id="topbar">
@@ -80,6 +87,32 @@
       height="1400"
       style="display: none"
     ></canvas>
+
+    <!-- Audio elements for sound effects and music -->
+    <audio id="bgMusic" loop>
+      <source src="sounds/background-music.mp3" type="audio/mpeg" />
+      <source src="sounds/background-music.ogg" type="audio/ogg" />
+    </audio>
+    <audio id="matchSound" preload="auto">
+      <source src="sounds/match.mp3" type="audio/mpeg" />
+      <source src="sounds/match.ogg" type="audio/ogg" />
+    </audio>
+    <audio id="specialSound" preload="auto">
+      <source src="sounds/special.mp3" type="audio/mpeg" />
+      <source src="sounds/special.ogg" type="audio/ogg" />
+    </audio>
+    <audio id="comboSound" preload="auto">
+      <source src="sounds/combo.mp3" type="audio/mpeg" />
+      <source src="sounds/combo.ogg" type="audio/ogg" />
+    </audio>
+    <audio id="invalidSound" preload="auto">
+      <source src="sounds/invalid.mp3" type="audio/mpeg" />
+      <source src="sounds/invalid.ogg" type="audio/ogg" />
+    </audio>
+    <audio id="winSound" preload="auto">
+      <source src="sounds/win.mp3" type="audio/mpeg" />
+      <source src="sounds/win.ogg" type="audio/ogg" />
+    </audio>
 
     <!-- Load Farcaster SDK first -->
     <script src="https://unpkg.com/@farcaster/frame-sdk@0.1.1/dist/index.js"></script>

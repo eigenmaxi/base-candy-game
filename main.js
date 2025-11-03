@@ -1,8 +1,8 @@
-// Base Candy main.js - FIXED VERSION WITH FARCASTER SHARING & WALLET INTEGRATION
+// Base Candy main.js - FIXED VERSION WITH SOUND, LOADING DELAY, AND 8x8 GRID
 document.addEventListener("DOMContentLoaded", () => {
-  // constants
-  const ROWS = 9;
-  const COLS = 9;
+  // constants - CHANGED TO 8x8
+  const ROWS = 8;
+  const COLS = 8;
   const TILES = ROWS * COLS;
   const imagesPath = "images/";
 
@@ -45,6 +45,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const topbar = document.getElementById("topbar");
   const leaderboardEl = document.getElementById("leaderboard");
   const leaderboardPreviewEl = document.getElementById("leaderboardPreview");
+  const countdownOverlay = document.getElementById("countdownOverlay");
+  const countdownNumber = document.getElementById("countdownNumber");
   
   // New DOM elements
   const nameInputSection = document.getElementById("nameInputSection");
@@ -55,6 +57,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const mintNFTBtn = document.getElementById("mintNFTBtn");
   const walletStatus = document.getElementById("walletStatus");
   const scorecardCanvas = document.getElementById("scorecardCanvas");
+
+  // Audio elements
+  const bgMusic = document.getElementById("bgMusic");
+  const matchSound = document.getElementById("matchSound");
+  const specialSound = document.getElementById("specialSound");
+  const comboSound = document.getElementById("comboSound");
+  const invalidSound = document.getElementById("invalidSound");
+  const winSound = document.getElementById("winSound");
 
   // game state
   let board = []; // 2d array of tile objects {el, img}
@@ -84,38 +94,60 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log('Running in Farcaster mini app context');
   }
 
-  // Sound system (mock - replace with actual audio files)
-  const sounds = {
-    match: createSound(200, 0.1),
-    special: createSound(300, 0.15),
-    combo: createSound(400, 0.2),
-    invalid: createSound(100, 0.1),
-    win: createSound(500, 0.3)
-  };
-
-  function createSound(freq, duration) {
-    // Simple beep sound using Web Audio API
-    return {
-      play: () => {
-        if (isMuted) return;
-        try {
-          const ctx = new (window.AudioContext || window.webkitAudioContext)();
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.frequency.value = freq;
-          gain.gain.value = 0.1;
-          osc.start();
-          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
-          osc.stop(ctx.currentTime + duration);
-        } catch(e) {}
+  // IMPROVED SOUND SYSTEM
+  function playSound(name) {
+    if (isMuted) return;
+    
+    try {
+      let sound = null;
+      switch(name) {
+        case 'match':
+          sound = matchSound.cloneNode();
+          sound.volume = 0.4;
+          break;
+        case 'special':
+          sound = specialSound.cloneNode();
+          sound.volume = 0.5;
+          break;
+        case 'combo':
+          sound = comboSound.cloneNode();
+          sound.volume = 0.6;
+          break;
+        case 'invalid':
+          sound = invalidSound.cloneNode();
+          sound.volume = 0.3;
+          break;
+        case 'win':
+          sound = winSound.cloneNode();
+          sound.volume = 0.7;
+          break;
       }
-    };
+      
+      if (sound) {
+        sound.play().catch(e => console.log('Audio play failed:', e));
+      }
+    } catch(e) {
+      console.log('Sound error:', e);
+    }
   }
 
-  function playSound(name) {
-    if (sounds[name]) sounds[name].play();
+  function startBackgroundMusic() {
+    if (isMuted) return;
+    try {
+      bgMusic.volume = 0.25;
+      bgMusic.play().catch(e => console.log('Background music play failed:', e));
+    } catch(e) {
+      console.log('Background music error:', e);
+    }
+  }
+
+  function stopBackgroundMusic() {
+    try {
+      bgMusic.pause();
+      bgMusic.currentTime = 0;
+    } catch(e) {
+      console.log('Stop music error:', e);
+    }
   }
 
   // helpers for file names
@@ -816,7 +848,7 @@ document.addEventListener("DOMContentLoaded", () => {
       container.innerHTML = '<p style="text-align:center; opacity:0.7; margin-top:20px;">No scores yet. Be the first!</p>';
       return;
     }
-    
+
     let html = '<h3>🏆 Top Scores</h3><ol>';
     scores.slice(0, 10).forEach((s, idx) => {
       const date = new Date(s.date).toLocaleDateString();
@@ -835,10 +867,40 @@ document.addEventListener("DOMContentLoaded", () => {
     return '🍬';
   }
 
+  // COUNTDOWN FUNCTION - SHOWS 3, 2, 1, GO! BEFORE STARTING TIMER
+  function showCountdown(callback) {
+    countdownOverlay.classList.remove("hidden");
+    let count = 3;
+    
+    countdownNumber.textContent = count;
+    countdownNumber.style.animation = 'none';
+    setTimeout(() => countdownNumber.style.animation = '', 10);
+    
+    const countInterval = setInterval(() => {
+      count--;
+      if (count > 0) {
+        countdownNumber.textContent = count;
+        countdownNumber.style.animation = 'none';
+        setTimeout(() => countdownNumber.style.animation = '', 10);
+      } else {
+        countdownNumber.textContent = 'GO!';
+        countdownNumber.style.animation = 'none';
+        setTimeout(() => countdownNumber.style.animation = '', 10);
+        clearInterval(countInterval);
+        
+        setTimeout(() => {
+          countdownOverlay.classList.add("hidden");
+          if (callback) callback();
+        }, 1000);
+      }
+    }, 1000);
+  }
+
   // end game
   function endGame() {
     clearInterval(timerInterval);
     clearTimeout(hintTimeout);
+    stopBackgroundMusic();
     gameBoardContainer.classList.add("hidden");
     endScreen.classList.remove("hidden");
     finalScoreEl.textContent = score;
@@ -873,12 +935,14 @@ document.addEventListener("DOMContentLoaded", () => {
       gameBoard.style.pointerEvents = 'none';
       pauseBtn.textContent = 'Resume';
       showPauseOverlay();
+      if (!isMuted) bgMusic.pause();
     } else {
       startTimer();
       gameBoard.style.pointerEvents = 'auto';
       pauseBtn.textContent = 'Pause';
       hidePauseOverlay();
       startHintTimer();
+      if (!isMuted) bgMusic.play().catch(e => {});
     }
   }
 
@@ -906,10 +970,18 @@ document.addEventListener("DOMContentLoaded", () => {
   function toggleMute() {
     isMuted = !isMuted;
     muteBtn.textContent = isMuted ? '🔇' : '🔊';
+    
+    if (isMuted) {
+      bgMusic.pause();
+    } else {
+      if (!isPaused && gameBoardContainer.classList.contains('hidden') === false) {
+        bgMusic.play().catch(e => {});
+      }
+    }
   }
 
   // ============================================
-  // WALLET CONNECTION & NFT MINTING FUNCTIONS (FIXED)
+  // WALLET CONNECTION & NFT MINTING FUNCTIONS
   // ============================================
 
   async function connectWallet() {
@@ -1150,7 +1222,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ============================================
-  // FARCASTER SHARING (FIXED TO OPEN COMPOSER)
+  // FARCASTER SHARING
   // ============================================
 
   async function shareToFarcaster() {
@@ -1178,7 +1250,6 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       
       // Open Farcaster composer
-      // Note: Farcaster doesn't support direct image embeds via URL, so we guide the user
       const farcasterUrl = `https://warpcast.com/~/compose?text=${shareText}`;
       
       // Open in new window
@@ -1259,13 +1330,18 @@ document.addEventListener("DOMContentLoaded", () => {
   // Share to Farcaster button
   shareToFarcasterBtn.addEventListener("click", shareToFarcaster);
 
-  // start button
+  // start button - WITH COUNTDOWN
   startButton.addEventListener("click", () => {
     startScreen.classList.add("hidden");
     gameBoardContainer.classList.remove("hidden");
     initBoard();
-    startTimer();
     scaleBoard();
+    
+    // Show countdown before starting timer
+    showCountdown(() => {
+      startTimer();
+      startBackgroundMusic();
+    });
   });
 
   // pause button
@@ -1279,8 +1355,12 @@ document.addEventListener("DOMContentLoaded", () => {
     clearInterval(timerInterval);
     clearTimeout(hintTimeout);
     initBoard();
-    startTimer();
     scaleBoard();
+    
+    // Show countdown before starting timer
+    showCountdown(() => {
+      startTimer();
+    });
   });
 
   // restart button
