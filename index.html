@@ -131,23 +131,51 @@
       <source src="sounds/win.ogg" type="audio/ogg" />
     </audio>
 
+    <!-- Load Farcaster SDK -->
+    <script type="module">
+      import sdk from "https://esm.sh/@farcaster/frame-sdk@0.1.1";
+
+      // Initialize SDK immediately
+      sdk.actions.ready();
+
+      console.log("Farcaster SDK ready() called");
+    </script>
+    📋 Alternative Fix (If the above doesn't work): If you want to keep the UMD
+    version, try this:
+
     <!-- Load Farcaster SDK first -->
     <script src="https://unpkg.com/@farcaster/frame-sdk@0.1.1/dist/index.js"></script>
 
-    <!-- FARCASTER SDK INITIALIZATION (STEP 3) -->
+    <!-- Initialize SDK -->
     <script>
-      // Wait for SDK to load, then initialize
-      window.addEventListener("load", function () {
-        if (window.FrameSDK) {
-          // Initialize SDK
-          window.FrameSDK.actions.ready();
+      (function initFarcaster() {
+        // Try multiple times in case SDK is still loading
+        const maxAttempts = 10;
+        let attempts = 0;
 
-          // Sign manifest
-          window.FrameSDK.actions.signManifest();
+        const interval = setInterval(function () {
+          attempts++;
 
-          console.log("Farcaster SDK initialized");
-        }
-      });
+          // Check if SDK is available
+          if (window.sdk || window.frameSDK || window.FrameSDK) {
+            const farcasterSDK =
+              window.sdk || window.frameSDK || window.FrameSDK;
+
+            // Call ready
+            if (farcasterSDK.actions && farcasterSDK.actions.ready) {
+              farcasterSDK.actions.ready();
+              console.log("Farcaster SDK ready() called successfully");
+              clearInterval(interval);
+            }
+          }
+
+          // Stop trying after max attempts
+          if (attempts >= maxAttempts) {
+            console.warn("Could not initialize Farcaster SDK");
+            clearInterval(interval);
+          }
+        }, 100);
+      })();
     </script>
 
     <!-- Load ethers.js -->
