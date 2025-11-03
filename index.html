@@ -132,13 +132,18 @@
     </audio>
 
     <!-- Load Farcaster SDK -->
-    <script type="module">
-      import sdk from "https://esm.sh/@farcaster/frame-sdk@0.1.1";
+    <script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.2.0/dist/index.global.js"></script>
 
-      // Initialize SDK immediately
-      sdk.actions.ready();
-
-      console.log("Farcaster SDK ready() called");
+    <!-- Initialize SDK -->
+    <script>
+      window.addEventListener("DOMContentLoaded", function () {
+        if (window.sdk) {
+          window.sdk.actions.ready();
+          console.log("Farcaster SDK ready() called successfully");
+        } else {
+          console.error("Farcaster SDK not found");
+        }
+      });
     </script>
 
     <!-- Load Farcaster SDK first -->
@@ -177,7 +182,7 @@
     </script>
 
     <!-- Load ethers.js -->
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <!-- Load main game script -->
     <script src="main.js"></script>
   </body>
