@@ -4,6 +4,23 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Base Candy 🍬</title>
+
+    <!-- FARCASTER META TAGS (STEP 2) -->
+    <meta property="fc:frame" content="vNext" />
+    <meta property="fc:frame:name" content="Base Candy Game" />
+    <meta property="fc:frame:icon_url" content="https://modu.ai/modu.svg" />
+    <meta
+      property="fc:frame:splash_image_url"
+      content="https://modu.ai/modu.svg"
+    />
+    <meta property="fc:frame:splash_background_color" content="#8B5CF6" />
+    <meta property="fc:frame:button:1" content="Play Game" />
+    <meta property="fc:frame:button:1:action" content="link" />
+    <meta
+      property="fc:frame:button:1:target"
+      content="https://base-candy-game.vercel.app"
+    />
+
     <link rel="stylesheet" href="style.css" />
   </head>
 
@@ -116,6 +133,23 @@
 
     <!-- Load Farcaster SDK first -->
     <script src="https://unpkg.com/@farcaster/frame-sdk@0.1.1/dist/index.js"></script>
+
+    <!-- FARCASTER SDK INITIALIZATION (STEP 3) -->
+    <script>
+      // Wait for SDK to load, then initialize
+      window.addEventListener("load", function () {
+        if (window.FrameSDK) {
+          // Initialize SDK
+          window.FrameSDK.actions.ready();
+
+          // Sign manifest
+          window.FrameSDK.actions.signManifest();
+
+          console.log("Farcaster SDK initialized");
+        }
+      });
+    </script>
+
     <!-- Load ethers.js -->
     <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
     <!-- Load main game script -->
