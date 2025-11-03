@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Base Candy 🍬</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <!-- Start Screen -->
+    <div id="startScreen">
+      <div class="start-content">
+        <img src="images/base.png" class="start-base-logo" alt="Base logo" />
+        <h1>Base Candy 🍬</h1>
+        <p class="sub">Welcome to the sweetest Base community challenge</p>
+        <p class="sub small">
+          Match your favorite Layer 2 logos and climb the Based leaderboard.
+        </p>
+        <button id="startButton">Start Game</button>
+        <div id="leaderboardPreview"></div>
+      </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="gameBoardContainer" class="hidden">
+      <div id="topbar">
+        <div id="scoreBoard">Score: <span id="score">0</span></div>
+        <div id="timerBoard">Time: <span id="time">60</span>s</div>
+        <div id="controls">
+          <button id="pauseBtn">Pause</button>
+          <button id="muteBtn">🔊</button>
+          <button id="resetBtn">Reset</button>
+        </div>
+      </div>
+
+      <div id="gameBoard" aria-label="game board"></div>
+    </div>
+
+    <!-- End Screen -->
+    <div id="endScreen" class="hidden">
+      <div class="start-content">
+        <img src="images/base.png" class="start-base-logo" alt="Base logo" />
+        <h1>Game Over</h1>
+        <p class="sub" id="compliment">Nice try!</p>
+        <p class="sub">Your score: <span id="finalScore">0</span></p>
+
+        <!-- Name Input Section -->
+        <div id="nameInputSection" class="name-input-section">
+          <input
+            type="text"
+            id="playerNameInput"
+            placeholder="Enter your name"
+            maxlength="20"
+            class="name-input"
+          />
+          <button id="saveNameBtn" class="save-name-btn">Save Score</button>
+        </div>
+
+        <!-- Action Buttons Section -->
+        <div id="actionButtons" class="hidden action-buttons">
+          <button id="shareToFarcasterBtn" class="action-btn farcaster-btn">
+            📢 Share on Farcaster
+          </button>
+          <button id="mintNFTBtn" class="action-btn mint-btn">
+            🎨 Mint Scorecard NFT
+          </button>
+          <div id="walletStatus" class="wallet-status"></div>
+        </div>
+
+        <div id="leaderboard"></div>
+        <button id="restartButton">Play Again</button>
+      </div>
+    </div>
+
+    <!-- Hidden canvas for scorecard generation -->
+    <canvas
+      id="scorecardCanvas"
+      width="1000"
+      height="1400"
+      style="display: none"
+    ></canvas>
+
+    <!-- Load Farcaster SDK first -->
+    <script src="https://unpkg.com/@farcaster/frame-sdk@0.1.1/dist/index.js"></script>
+    <!-- Load ethers.js -->
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <!-- Load main game script -->
+    <script src="main.js"></script>
+  </body>
+</html>
