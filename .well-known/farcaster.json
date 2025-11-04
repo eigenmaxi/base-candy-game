@@ -9,11 +9,12 @@
     "splashImageUrl": "https://base-candy-game.vercel.app/splash.png",
     "splashBackgroundColor": "#FF69B4",
     "subtitle": "Match candies",
-    "description": "A sweet puzzle game where you match candies. ",
+    "description": "A sweet puzzle game where you match candies",
+    "primaryCategory": "games",
     "screenshotUrls": [
       "https://base-candy-game.vercel.app/screenshot1.png"
     ],
-    "primaryCategory": "games",
+    "heroImageUrl": "https://base-candy-game.vercel.app/screenshot1.png",
     "tags": [
       "game",
       "candycrush",
@@ -21,7 +22,6 @@
       "basecandy",
       "candy"
     ],
-    "heroImageUrl": "https://base-candy-game.vercel.app/screenshot1.png",
     "tagline": "Match sweet. Mint sweeter.",
     "ogTitle": "Base Candy - Match Candies",
     "ogDescription": "Play the addictive candy matching puzzle game",

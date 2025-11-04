@@ -5,23 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Base Candy 🍬</title>
 
-    <!-- FARCASTER META TAGS -->
-    <meta property="fc:frame" content="vNext" />
-    <meta property="fc:frame:name" content="Base Candy Game" />
+    <!-- FARCASTER META TAGS - Corrected for Mini App -->
     <meta
-      property="fc:frame:icon_url"
-      content="https://base-candy-game.vercel.app/images/base.png"
+      name="fc:miniapp"
+      content='{"version":"1","imageUrl":"https://base-candy-game.vercel.app/images/opengraph-image.png","button":{"title":"Play Game","action":{"type":"launch_miniapp","url":"https://base-candy-game.vercel.app"}}}'
     />
+    <!-- For backward compatibility -->
     <meta
-      property="fc:frame:splash_image_url"
-      content="https://base-candy-game.vercel.app/images/base.png"
-    />
-    <meta property="fc:frame:splash_background_color" content="#FF69B4" />
-    <meta property="fc:frame:button:1" content="Play Game" />
-    <meta property="fc:frame:button:1:action" content="link" />
-    <meta
-      property="fc:frame:button:1:target"
-      content="https://base-candy-game.vercel.app"
+      name="fc:frame"
+      content='{"version":"1","imageUrl":"https://base-candy-game.vercel.app/images/opengraph-image.png","button":{"title":"Play Game","action":{"type":"launch_frame","url":"https://base-candy-game.vercel.app"}}}'
     />
 
     <link rel="stylesheet" href="style.css" />
@@ -134,47 +126,23 @@
       <source src="sounds/win.ogg" type="audio/ogg" />
     </audio>
 
-    <!-- Load Farcaster SDK - UPDATED TO v0.3.0 -->
-    <script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.3.0/dist/index.global.js"></script>
+    <!-- Load Farcaster Mini App SDK -->
+    <script type="module">
+      import { sdk } from "https://esm.sh/@farcaster/miniapp-sdk@latest";
+      window.sdk = sdk;
+    </script>
 
-    <!-- Initialize SDK - IMPROVED with better timing and retry logic -->
+    <!-- Initialize SDK - Call ready after app is loaded -->
     <script>
-      window.addEventListener("DOMContentLoaded", function () {
-        // Function to call SDK ready
-        function callSDKReady() {
-          if (window.sdk && window.sdk.actions && window.sdk.actions.ready) {
-            try {
-              window.sdk.actions.ready();
-              console.log("✅ Farcaster SDK ready() called successfully");
-              return true;
-            } catch (e) {
-              console.error("❌ Error calling Farcaster SDK ready():", e);
-              return false;
-            }
-          } else {
-            console.warn("⚠️ Farcaster SDK not fully loaded yet");
-            return false;
-          }
+      window.addEventListener("DOMContentLoaded", async function () {
+        // Wait for 1s to ensure content loaded
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        try {
+          await window.sdk.actions.ready();
+          console.log("✅ Farcaster SDK ready() called successfully");
+        } catch (e) {
+          console.error("❌ Error calling Farcaster SDK ready():", e);
         }
-
-        // First attempt after 300ms
-        setTimeout(function () {
-          const success = callSDKReady();
-
-          // If first attempt fails, retry after 500ms
-          if (!success) {
-            setTimeout(function () {
-              const retrySuccess = callSDKReady();
-
-              // If second attempt fails, try one more time after 1000ms
-              if (!retrySuccess) {
-                setTimeout(function () {
-                  callSDKReady();
-                }, 1000);
-              }
-            }, 500);
-          }
-        }, 300);
       });
     </script>
 
