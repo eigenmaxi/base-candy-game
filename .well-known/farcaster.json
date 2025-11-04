@@ -1,12 +1,12 @@
 {
-  "frame": {
+  "miniapp": {
     "name": "Base Candy",
     "version": "1",
-    "iconUrl": "https://base-candy-game.vercel.app/images/icon.png",
+    "iconUrl": "https://base-candy-game.vercel.app/images/base.png",
     "homeUrl": "https://base-candy-game.vercel.app",
     "imageUrl": "https://base-candy-game.vercel.app/image.png",
     "buttonTitle": "Play Now",
-    "splashImageUrl": "https://base-candy-game.vercel.app/splash.png",
+    "splashImageUrl": "https://base-candy-game.vercel.app/images/base.png",
     "splashBackgroundColor": "#FF69B4",
     "subtitle": "Match candies",
     "description": "A sweet puzzle game where you match candies",
