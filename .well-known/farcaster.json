@@ -9,7 +9,7 @@
     "splashImageUrl": "https://base-candy-game.vercel.app/splash.png",
     "splashBackgroundColor": "#FF69B4",
     "webhookUrl": "https://base-candy-game.vercel.app/api/webhook",
-    "subtitle": "Match candies, mint your score!",
+    "subtitle": "Match candies",
     "description": "A sweet puzzle game where you match candies. ",
     "primaryCategory": "games",
     "screenshotUrls": [
