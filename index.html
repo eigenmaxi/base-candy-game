@@ -8,12 +8,12 @@
     <!-- FARCASTER META TAGS - Corrected for Mini App -->
     <meta
       name="fc:miniapp"
-      content='{"version":"1","imageUrl":"https://base-candy-game.vercel.app/images/opengraph-image.png","button":{"title":"Play Game","action":{"type":"launch_miniapp","url":"https://base-candy-game.vercel.app"}}}'
+      content='{"version":"1","imageUrl":"https://base-candy-game.vercel.app/images/base.png","button":{"title":"Play Game","action":{"type":"launch_miniapp","url":"https://base-candy-game.vercel.app"}}}'
     />
-    <!-- For backward compatibility -->
+    <!-- Backward compatibility -->
     <meta
       name="fc:frame"
-      content='{"version":"1","imageUrl":"https://base-candy-game.vercel.app/images/opengraph-image.png","button":{"title":"Play Game","action":{"type":"launch_frame","url":"https://base-candy-game.vercel.app"}}}'
+      content='{"version":"1","imageUrl":"https://base-candy-game.vercel.app/images/base.png","button":{"title":"Play Game","action":{"type":"launch_frame","url":"https://base-candy-game.vercel.app"}}}'
     />
 
     <link rel="stylesheet" href="style.css" />
@@ -126,17 +126,15 @@
       <source src="sounds/win.ogg" type="audio/ogg" />
     </audio>
 
-    <!-- Load Farcaster Mini App SDK -->
+    <!-- Load Farcaster Mini App SDK via ESM CDN -->
     <script type="module">
-      import { sdk } from "https://esm.sh/@farcaster/miniapp-sdk@latest";
+      import { sdk } from "https://esm.sh/@farcaster/miniapp-sdk";
       window.sdk = sdk;
     </script>
 
-    <!-- Initialize SDK - Call ready after app is loaded -->
+    <!-- Initialize SDK - Call ready after app load -->
     <script>
-      window.addEventListener("DOMContentLoaded", async function () {
-        // Wait for 1s to ensure content loaded
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+      window.addEventListener("load", async function () {
         try {
           await window.sdk.actions.ready();
           console.log("✅ Farcaster SDK ready() called successfully");
