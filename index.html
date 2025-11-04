@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Base Candy 🍬</title>
 
-    <!-- FARCASTER META TAGS (STEP 2) -->
+    <!-- FARCASTER META TAGS -->
     <meta property="fc:frame" content="vNext" />
     <meta property="fc:frame:name" content="Base Candy Game" />
     <meta property="fc:frame:icon_url" content="https://modu.ai/modu.svg" />
@@ -131,58 +131,31 @@
       <source src="sounds/win.ogg" type="audio/ogg" />
     </audio>
 
-    <!-- Load Farcaster SDK -->
+    <!-- Load Farcaster SDK - FIXED: Only load once with correct version -->
     <script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@0.2.0/dist/index.global.js"></script>
 
-    <!-- Initialize SDK -->
+    <!-- Initialize SDK - FIXED: Only call ready() once -->
     <script>
       window.addEventListener("DOMContentLoaded", function () {
-        if (window.sdk) {
-          window.sdk.actions.ready();
-          console.log("Farcaster SDK ready() called successfully");
-        } else {
-          console.error("Farcaster SDK not found");
-        }
+        // Wait for SDK to be fully loaded
+        setTimeout(function () {
+          if (window.sdk && window.sdk.actions && window.sdk.actions.ready) {
+            try {
+              window.sdk.actions.ready();
+              console.log("Farcaster SDK ready() called successfully");
+            } catch (e) {
+              console.error("Error calling Farcaster SDK ready():", e);
+            }
+          } else {
+            console.warn("Farcaster SDK not fully loaded");
+          }
+        }, 100);
       });
     </script>
 
-    <!-- Load Farcaster SDK first -->
-    <script src="https://unpkg.com/@farcaster/frame-sdk@0.1.1/dist/index.js"></script>
-
-    <!-- Initialize SDK -->
-    <script>
-      (function initFarcaster() {
-        // Try multiple times in case SDK is still loading
-        const maxAttempts = 10;
-        let attempts = 0;
-
-        const interval = setInterval(function () {
-          attempts++;
-
-          // Check if SDK is available
-          if (window.sdk || window.frameSDK || window.FrameSDK) {
-            const farcasterSDK =
-              window.sdk || window.frameSDK || window.FrameSDK;
-
-            // Call ready
-            if (farcasterSDK.actions && farcasterSDK.actions.ready) {
-              farcasterSDK.actions.ready();
-              console.log("Farcaster SDK ready() called successfully");
-              clearInterval(interval);
-            }
-          }
-
-          // Stop trying after max attempts
-          if (attempts >= maxAttempts) {
-            console.warn("Could not initialize Farcaster SDK");
-            clearInterval(interval);
-          }
-        }, 100);
-      })();
-    </script>
-
-    <!-- Load ethers.js -->
+    <!-- Load ethers.js v6 - FIXED: Kept v6 but will use correct syntax in main.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+
     <!-- Load main game script -->
     <script src="main.js"></script>
   </body>

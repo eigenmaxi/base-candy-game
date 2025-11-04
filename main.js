@@ -1,6 +1,6 @@
-// Base Candy main.js - FIXED VERSION WITH SOUND, LOADING DELAY, AND 8x8 GRID
+// Base Candy main.js - FIXED VERSION
 document.addEventListener("DOMContentLoaded", () => {
-  // constants - CHANGED TO 8x8
+  // constants - 8x8 grid
   const ROWS = 8;
   const COLS = 8;
   const TILES = ROWS * COLS;
@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let isFarcasterContext = false;
 
   // Check if running in Farcaster context
-  if (typeof window.farcasterSDK !== 'undefined') {
+  if (typeof window.sdk !== 'undefined') {
     isFarcasterContext = true;
     console.log('Running in Farcaster mini app context');
   }
@@ -154,7 +154,16 @@ document.addEventListener("DOMContentLoaded", () => {
   function normalFile(name){ return `${imagesPath}${name}.png` }
   function superFile(name){ return `${imagesPath}${name}-super.png` }
   function megaFile(name){ return `${imagesPath}${name}-mega.png` }
-  function blankFile(){ return `${imagesPath}blank.png` }
+
+  // FIXED: Check if tile is empty without using blank.png
+  function isEmpty(r, c) {
+    const src = board[r][c].img.src;
+    return !src || src === '' || src.endsWith('data:,');
+  }
+
+  function clearTileImage(r, c) {
+    board[r][c].img.src = 'data:,'; // Empty data URL instead of blank.png
+  }
 
   function baseNameFromSrc(src){
     const file = src.split("/").pop();
@@ -190,7 +199,6 @@ document.addEventListener("DOMContentLoaded", () => {
       images.push(superFile(logo));
       images.push(megaFile(logo));
     });
-    images.push(blankFile());
     
     images.forEach(src => {
       const img = new Image();
@@ -418,6 +426,11 @@ document.addEventListener("DOMContentLoaded", () => {
       let run = [];
       for(let c=0;c<COLS;c++){
         const pos = [r,c];
+        if (isEmpty(r, c)) {
+          if (run.length >= 2) matches.push(run.slice());
+          run = [];
+          continue;
+        }
         const t = baseTypeFromSrc(board[r][c].img.src);
         if (run.length === 0 || t.base === baseTypeFromSrc(board[run[run.length-1][0]][run[run.length-1][1]].img.src).base) {
           run.push(pos);
@@ -434,6 +447,11 @@ document.addEventListener("DOMContentLoaded", () => {
       let run = [];
       for(let r=0;r<ROWS;r++){
         const pos = [r,c];
+        if (isEmpty(r, c)) {
+          if (run.length >= 2) matches.push(run.slice());
+          run = [];
+          continue;
+        }
         const t = baseTypeFromSrc(board[r][c].img.src);
         if (run.length === 0 || t.base === baseTypeFromSrc(board[run[run.length-1][0]][run[run.length-1][1]].img.src).base) {
           run.push(pos);
@@ -534,8 +552,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // clear a tile and add score
   function clearTile(r, c, points) {
-    if (board[r][c].img.src.endsWith("blank.png")) return;
-    board[r][c].img.src = blankFile();
+    if (isEmpty(r, c)) return;
+    clearTileImage(r, c);
     board[r][c].el.classList.add("crushed");
     setTimeout(() => board[r][c].el.classList.remove("crushed"), 300);
     score += points;
@@ -635,17 +653,17 @@ document.addEventListener("DOMContentLoaded", () => {
   function collapseAndRefill() {
     for (let c = 0; c < COLS; c++) {
       for (let r = ROWS - 1; r >= 0; r--) {
-        if (board[r][c].img.src.endsWith("blank.png")) {
+        if (isEmpty(r, c)) {
           let found = -1;
           for (let k = r - 1; k >= 0; k--) {
-            if (!board[k][c].img.src.endsWith("blank.png")) {
+            if (!isEmpty(k, c)) {
               found = k;
               break;
             }
           }
           if (found >= 0) {
             board[r][c].img.src = board[found][c].img.src;
-            board[found][c].img.src = blankFile();
+            clearTileImage(found, c);
           } else {
             board[r][c].img.src = chooseRandomNormal();
           }
@@ -754,7 +772,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const allTiles = [];
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
-        if (!board[r][c].img.src.endsWith("blank.png")) {
+        if (!isEmpty(r, c)) {
           allTiles.push(board[r][c].img.src);
         }
       }
@@ -766,7 +784,7 @@ document.addEventListener("DOMContentLoaded", () => {
       let idx = 0;
       for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
-          if (!board[r][c].img.src.endsWith("blank.png")) {
+          if (!isEmpty(r, c) || idx < allTiles.length) {
             board[r][c].img.src = allTiles[idx++];
           }
         }
@@ -998,9 +1016,9 @@ document.addEventListener("DOMContentLoaded", () => {
       let ethereum = null;
 
       // Check if running in Farcaster context
-      if (isFarcasterContext && window.farcasterSDK && window.farcasterSDK.wallet) {
+      if (isFarcasterContext && window.sdk && window.sdk.wallet) {
         console.log('Using Farcaster wallet');
-        ethereum = window.farcasterSDK.wallet.ethereum;
+        ethereum = window.sdk.wallet.ethereum;
       } else if (typeof window.ethereum !== 'undefined') {
         console.log('Using MetaMask or injected wallet');
         ethereum = window.ethereum;
@@ -1054,9 +1072,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Create ethers provider and signer using window.ethers
-      provider = new window.ethers.providers.Web3Provider(ethereum);
-      signer = provider.getSigner();
+      // FIXED: Create ethers provider using v6 syntax
+      provider = new window.ethers.BrowserProvider(ethereum);
+      signer = await provider.getSigner();
       userAddress = accounts[0];
       walletConnected = true;
 
@@ -1100,11 +1118,23 @@ document.addEventListener("DOMContentLoaded", () => {
       const receipt = await tx.wait();
 
       // Get token ID from event
-      const event = receipt.events?.find(e => e.event === 'ScorecardMinted');
-      const tokenId = event?.args?.tokenId?.toString() || 'Unknown';
+      const event = receipt.logs?.find(log => {
+        try {
+          const parsed = contract.interface.parseLog(log);
+          return parsed && parsed.name === 'ScorecardMinted';
+        } catch (e) {
+          return false;
+        }
+      });
+      
+      let tokenId = 'Unknown';
+      if (event) {
+        const parsed = contract.interface.parseLog(event);
+        tokenId = parsed.args.tokenId?.toString() || 'Unknown';
+      }
 
       showStatusMessage(
-        `🎉 Successfully minted! <a href="https://basescan.org/tx/${receipt.transactionHash}" target="_blank">View on BaseScan</a>`,
+        `🎉 Successfully minted! <a href="https://basescan.org/tx/${receipt.hash}" target="_blank">View on BaseScan</a>`,
         'success'
       );
 
@@ -1115,9 +1145,9 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error('Minting error:', error);
       let errorMsg = 'Failed to mint NFT: ';
       
-      if (error.code === 4001) {
+      if (error.code === 4001 || error.code === 'ACTION_REJECTED') {
         errorMsg += 'Transaction rejected by user';
-      } else if (error.code === -32603) {
+      } else if (error.code === -32603 || error.message.includes('insufficient funds')) {
         errorMsg += 'Insufficient funds for gas';
       } else {
         errorMsg += error.message;
