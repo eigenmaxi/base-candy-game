@@ -1018,7 +1018,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Check if running in Farcaster context
       if (isFarcasterContext && window.sdk && window.sdk.wallet) {
         console.log('Using Farcaster wallet');
-        ethereum = window.sdk.wallet.ethereum;
+        ethereum = await window.sdk.wallet.ethProvider;
       } else if (typeof window.ethereum !== 'undefined') {
         console.log('Using MetaMask or injected wallet');
         ethereum = window.ethereum;
