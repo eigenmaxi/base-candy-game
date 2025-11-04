@@ -1,19 +1,37 @@
 {
+  "frame": {
+    "name": "Base Candy",
+    "version": "1",
+    "iconUrl": "https://base-candy-game.vercel.app/images/icon.png",
+    "homeUrl": "https://base-candy-game.vercel.app",
+    "imageUrl": "https://base-candy-game.vercel.app/image.png",
+    "buttonTitle": "Play Now",
+    "splashImageUrl": "https://base-candy-game.vercel.app/splash.png",
+    "splashBackgroundColor": "#FF69B4",
+    "webhookUrl": "https://base-candy-game.vercel.app/api/webhook",
+    "subtitle": "Match candies, mint your score!",
+    "description": "A sweet puzzle game where you match candies. ",
+    "primaryCategory": "games",
+    "screenshotUrls": [
+      "https://base-candy-game.vercel.app/screenshot1.png"
+    ],
+    "heroImageUrl": "https://base-candy-game.vercel.app/screenshot1.png",
+    "tags": [
+      "game",
+      "candycrush",
+      "basecrush",
+      "basecandy",
+      "candy"
+    ],
+    "tagline": "Match sweet. Mint sweeter.",
+    "ogTitle": "Base Candy - Match Candies",
+    "ogDescription": "Play the addictive candy matching puzzle game",
+    "ogImageUrl": "https://base-candy-game.vercel.app/og-image.png",
+    "castShareUrl": "https://base-candy-game.vercel.app"
+  },
   "accountAssociation": {
     "header": "eyJmaWQiOjI2NjIzMiwidHlwZSI6ImF1dGgiLCJrZXkiOiIweDQxOWYyM2U1Yzk4NzQ3YkVCZEFGNkJhNkRDMzc0QkYwMjI4MDVhODIifQ",
-    "payload": "eyJkb21haW4iOiJiYXNlLWNhbmR5LWdhbWUudmVyY2VsLmFwcCJ9",
-    "signature": "NmSFC39/G8mFUjG0I/9QHwg6GxTky1soVsyaYD+6GMADdkJtqrQIRIcsuu44sIaVgjN2M7cH4zwMuXNRj/WHiRw="
-  },
-  "frame": {
-    "version": "1",
-    "name": "Base Candy Game",
-    "iconUrl": "https://modu.ai/modu.svg",
-    "splashImageUrl": "https://modu.ai/modu.svg",
-    "splashBackgroundColor": "#8B5CF6",
-    "homeUrl": "https://base-candy-game.vercel.app",
-    "buttonTitle": "Play Game"
-  },
-  "baseBuilder": {
-    "enabled": true
+    "payload": "eyJkb21haW4iOiJodHRwczovL2Jhc2UtY2FuZHktZ2FtZS52ZXJjZWwuYXBwLyJ9",
+    "signature": "GMyS6Z+v18lRYQEHmDpkO4tGRhuDztxCVbXfsBEucUcWJuQieGALko8eNunZ434ouDbdddA5UHuaGE0oQtRpCRs="
   }
 }
