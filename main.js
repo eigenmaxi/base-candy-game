@@ -1138,6 +1138,33 @@ document.addEventListener("DOMContentLoaded", () => {
       // Create contract instance using window.ethers
       const contract = new window.ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
+      // Estimate gas first to check if contract exists and function is callable
+      try {
+        const gasEstimate = await contract.mintScorecard.estimateGas(
+          score,
+          playerName,
+          playerRank,
+          currentCompliment,
+          { value: 0 } // Try with no value first
+        );
+        console.log('Gas estimate:', gasEstimate.toString());
+      } catch (estimateError) {
+        console.error('Gas estimation failed:', estimateError);
+        
+        // Check if contract exists
+        const code = await provider.getCode(CONTRACT_ADDRESS);
+        if (code === '0x') {
+          throw new Error('Contract not deployed on Base network. Please verify the contract address.');
+        }
+        
+        // If it's a revert error, the contract might not have the function or requires payment
+        if (estimateError.message.includes('missing revert data') || estimateError.code === 'CALL_EXCEPTION') {
+          throw new Error('Contract function not available or incorrect parameters. Please check contract deployment.');
+        }
+        
+        throw estimateError;
+      }
+
       // Call mintScorecard function
       const tx = await contract.mintScorecard(
         score,
@@ -1183,8 +1210,12 @@ document.addEventListener("DOMContentLoaded", () => {
         errorMsg += 'Transaction rejected by user';
       } else if (error.code === -32603 || error.message.includes('insufficient funds')) {
         errorMsg += 'Insufficient funds for gas';
+      } else if (error.message.includes('Contract not deployed')) {
+        errorMsg = error.message;
+      } else if (error.message.includes('Contract function not available')) {
+        errorMsg = error.message;
       } else {
-        errorMsg += error.message;
+        errorMsg += error.message || 'Unknown error occurred';
       }
       
       showStatusMessage(errorMsg, 'error');
@@ -1303,17 +1334,34 @@ Rank: #${playerRank}
 
 Can you beat my score? 🚀`;
       
-      // If in Farcaster context, use SDK to open composer
-      if (isFarcasterContext && window.sdk && window.sdk.actions && window.sdk.actions.openUrl) {
+      // If in Farcaster context, use SDK to compose cast and minimize frame
+      if (isFarcasterContext && window.sdk && window.sdk.actions) {
         try {
-          // Use Farcaster SDK to open composer with app URL as embed
-          // This creates a clickable card in the cast
-          const castUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(APP_URL)}`;
-          await window.sdk.actions.openUrl(castUrl);
+          // Use addFrame to create a cast with the mini app embedded
+          if (window.sdk.actions.addFrame) {
+            await window.sdk.actions.addFrame({
+              text: shareText,
+              frameUrl: APP_URL
+            });
+            console.log('✅ Cast created with addFrame');
+          } else if (window.sdk.actions.openUrl) {
+            // Fallback: Use openUrl with Warpcast composer
+            const castUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(APP_URL)}`;
+            await window.sdk.actions.openUrl(castUrl);
+            console.log('✅ Opened composer with openUrl');
+          }
           
-          showStatusMessage('✅ Opening Farcaster! Your game link will appear as a clickable card.', 'success');
+          showStatusMessage('✅ Cast created! Mini app will be minimized.', 'success');
           shareToFarcasterBtn.disabled = false;
           shareToFarcasterBtn.textContent = '📢 Share on Farcaster';
+          
+          // Close/minimize the mini app frame after sharing
+          if (window.sdk.actions.close) {
+            setTimeout(() => {
+              window.sdk.actions.close();
+              console.log('✅ Mini app closed');
+            }, 1500);
+          }
           return;
         } catch (err) {
           console.error('Farcaster SDK share error:', err);
