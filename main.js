@@ -1153,17 +1153,35 @@ document.addEventListener("DOMContentLoaded", () => {
       mintNFTBtn.disabled = true;
       mintNFTBtn.innerHTML = 'Minting...<span class="spinner"></span>';
 
+      // Verify we're on Base
+      const network = await provider.getNetwork();
+      console.log('🔗 Network:', network.chainId.toString(), network.name);
+      
+      if (network.chainId !== 8453n) {
+        throw new Error('Please switch to Base network');
+      }
+
       // Create contract instance using window.ethers
       const contract = new window.ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
-      console.log('🔄 Calling mintScorecard with:', { score, playerName, playerRank, currentCompliment });
+      console.log('🔄 Minting with params:', { 
+        score, 
+        playerName, 
+        playerRank, 
+        currentCompliment,
+        contractAddress: CONTRACT_ADDRESS,
+        userAddress
+      });
       
-      // Call mintScorecard function directly (skip gas estimation for Farcaster wallet compatibility)
+      // Try to call the contract with explicit gas limit
       const tx = await contract.mintScorecard(
         score,
         playerName,
         playerRank,
-        currentCompliment
+        currentCompliment,
+        {
+          gasLimit: 500000 // Set explicit gas limit
+        }
       );
       
       console.log('✅ Transaction sent:', tx.hash);
@@ -1173,7 +1191,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Wait for transaction to be mined
       const receipt = await tx.wait();
       
-      console.log('✅ Transaction confirmed:', receipt.hash);
+      console.log('✅ Transaction confirmed:', receipt);
 
       // Get token ID from event
       const event = receipt.logs?.find(log => {
@@ -1201,19 +1219,28 @@ document.addEventListener("DOMContentLoaded", () => {
       mintNFTBtn.disabled = true;
 
     } catch (error) {
-      console.error('Minting error:', error);
+      console.error('❌ Minting error details:', error);
+      console.error('Error code:', error.code);
+      console.error('Error reason:', error.reason);
+      console.error('Error data:', error.data);
+      
       let errorMsg = 'Failed to mint NFT: ';
       
       if (error.code === 4001 || error.code === 'ACTION_REJECTED') {
         errorMsg += 'Transaction rejected by user';
       } else if (error.code === -32603 || error.message.includes('insufficient funds')) {
         errorMsg += 'Insufficient funds for gas';
+      } else if (error.reason) {
+        // Contract revert reason
+        errorMsg += error.reason;
+      } else if (error.data?.message) {
+        errorMsg += error.data.message;
       } else if (error.message.includes('missing revert data')) {
-        errorMsg += 'Contract call failed. Make sure you have enough ETH for gas and the contract is properly deployed.';
+        errorMsg += 'Contract reverted. This might be due to: contract paused, minting limit reached, or invalid parameters.';
       } else if (error.message.includes('user rejected')) {
         errorMsg += 'Transaction rejected by user';
       } else {
-        errorMsg += error.message || error.reason || 'Unknown error occurred';
+        errorMsg += error.message || 'Unknown error occurred';
       }
       
       showStatusMessage(errorMsg, 'error');
