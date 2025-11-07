@@ -162,23 +162,21 @@
 
     <!-- Load Farcaster Mini App SDK -->
     <script type="module">
-      import sdk from "https://esm.sh/@farcaster/frame-sdk@0.2.0";
+      import { sdk } from "https://esm.sh/@farcaster/miniapp-sdk";
       window.sdk = sdk;
 
-      // Initialize SDK and context
-      (async () => {
-        try {
-          const context = await sdk.context;
-          window.farcasterContext = context;
-          console.log("✅ Farcaster SDK context loaded:", context);
+      // Call ready() immediately after load to hide splash screen
+      await sdk.actions.ready();
+      console.log("✅ Farcaster SDK ready() called");
 
-          // Signal app is ready
-          await sdk.actions.ready();
-          console.log("✅ App ready signal sent");
-        } catch (err) {
-          console.log("Not in Farcaster context or SDK error:", err);
-        }
-      })();
+      // Then initialize context
+      try {
+        const context = await sdk.context;
+        window.farcasterContext = context;
+        console.log("✅ Farcaster context loaded:", context);
+      } catch (err) {
+        console.log("Context loading error (may be outside Farcaster):", err);
+      }
     </script>
 
     <!-- Load ethers.js v6 -->
