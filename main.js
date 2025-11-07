@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const imagesPath = "images/";
 
   // CONTRACT CONFIGURATION
-  const CONTRACT_ADDRESS = "0xe0c3D4DF26F3D3E27475f1C49168032891011708";
+  const CONTRACT_ADDRESS = "0xDA0C75B1e1B67bd6A38eDbeD7bd5c6C88Ee04836";
   const CONTRACT_ABI = [
     "function mintScorecard(uint256 score, string memory playerName, uint256 rank, string memory compliment) public returns (uint256)",
     "function getPlayerTokens(address player) public view returns (uint256[] memory)",
