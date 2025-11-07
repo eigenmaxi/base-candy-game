@@ -88,13 +88,15 @@ document.addEventListener("DOMContentLoaded", () => {
   let signer = null;
   let isFarcasterContext = false;
 
-  // Check if running in Farcaster context
-  window.addEventListener('load', async () => {
+  // Check if running in Farcaster context - wait for SDK to be ready
+  setTimeout(() => {
     if (typeof window.sdk !== 'undefined' && window.farcasterContext) {
       isFarcasterContext = true;
       console.log('✅ Running in Farcaster mini app context', window.farcasterContext);
+    } else {
+      console.log('ℹ️ Not in Farcaster context - running as standalone web app');
     }
-  });
+  }, 1000); // Wait 1 second for SDK to initialize
 
   // IMPROVED SOUND SYSTEM with better volumes
   function playSound(name) {
@@ -1018,58 +1020,72 @@ document.addEventListener("DOMContentLoaded", () => {
 
       let ethereum = null;
 
+      console.log('🔍 Wallet detection:', {
+        isFarcasterContext,
+        hasSDK: typeof window.sdk !== 'undefined',
+        hasSDKWallet: window.sdk?.wallet !== undefined,
+        hasWindowEthereum: typeof window.ethereum !== 'undefined'
+      });
+
       // Check if running in Farcaster context with wallet support
       if (isFarcasterContext && window.sdk && window.sdk.wallet) {
-        console.log('✅ Using Farcaster wallet provider');
+        console.log('🔄 Attempting to use Farcaster wallet provider...');
         try {
           // Get Farcaster wallet provider
           ethereum = await window.sdk.wallet.ethProvider;
           
           if (!ethereum) {
-            console.log('Farcaster wallet not available, falling back to injected provider');
+            console.log('⚠️ Farcaster wallet provider is null, falling back');
             throw new Error('No Farcaster wallet provider');
           }
           
-          console.log('✅ Farcaster wallet provider obtained');
+          console.log('✅ Farcaster wallet provider obtained successfully');
         } catch (err) {
-          console.error('Farcaster wallet error:', err);
+          console.error('❌ Farcaster wallet error:', err);
           // Fall back to injected wallet
           if (typeof window.ethereum !== 'undefined') {
-            console.log('Falling back to injected wallet');
+            console.log('🔄 Falling back to injected wallet (MetaMask/Rabby)');
             ethereum = window.ethereum;
           } else {
-            showStatusMessage('Please enable wallet in Farcaster or install MetaMask', 'error');
+            showStatusMessage('Please enable wallet in Farcaster settings', 'error');
             walletStatus.className = 'wallet-status disconnected';
             walletStatus.textContent = 'No wallet available';
             return false;
           }
         }
       } else if (typeof window.ethereum !== 'undefined') {
-        console.log('Using MetaMask or injected wallet');
+        console.log('✅ Using injected wallet (MetaMask/Rabby/etc)');
         ethereum = window.ethereum;
       } else {
-        showStatusMessage('Please install MetaMask or open in Farcaster!', 'error');
+        console.log('❌ No wallet provider found');
+        showStatusMessage('Please install a wallet (MetaMask/Rabby) or enable wallet in Farcaster!', 'error');
         walletStatus.className = 'wallet-status disconnected';
         walletStatus.textContent = 'No wallet found';
         return false;
       }
 
+      console.log('🔄 Requesting account access...');
       // Request account access
       const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+      console.log('✅ Accounts received:', accounts);
       
       // Check if on Base mainnet (Chain ID: 8453)
       const chainId = await ethereum.request({ method: 'eth_chainId' });
+      console.log('🔗 Current chain ID:', chainId, '(Base = 0x2105)');
       
       if (chainId !== '0x2105') { // 8453 in hex
+        console.log('🔄 Switching to Base network...');
         // Try to switch to Base mainnet
         try {
           await ethereum.request({
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: '0x2105' }],
           });
+          console.log('✅ Switched to Base network');
         } catch (switchError) {
           // Chain not added, try to add it
           if (switchError.code === 4902) {
+            console.log('🔄 Base network not found, adding it...');
             try {
               await ethereum.request({
                 method: 'wallet_addEthereumChain',
@@ -1085,7 +1101,9 @@ document.addEventListener("DOMContentLoaded", () => {
                   blockExplorerUrls: ['https://basescan.org']
                 }],
               });
+              console.log('✅ Base network added successfully');
             } catch (addError) {
+              console.error('❌ Failed to add Base network:', addError);
               showStatusMessage('Failed to add Base network. Please add it manually.', 'error');
               walletStatus.className = 'wallet-status disconnected';
               walletStatus.textContent = 'Please switch to Base network';
@@ -1109,7 +1127,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log('✅ Wallet connected successfully:', userAddress);
       return true;
     } catch (error) {
-      console.error('Wallet connection error:', error);
+      console.error('❌ Wallet connection error:', error);
       
       let errorMsg = 'Failed to connect wallet';
       if (error.code === 4001) {
@@ -1314,47 +1332,28 @@ Rank: #${playerRank}
 
 Can you beat my score? 🚀`;
       
-      // If in Farcaster context, use SDK to compose cast and minimize frame
-      if (isFarcasterContext && window.sdk && window.sdk.actions) {
+      const castUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(APP_URL)}`;
+      
+      // If in Farcaster context, use SDK to open URL
+      if (isFarcasterContext && window.sdk && window.sdk.actions && window.sdk.actions.openUrl) {
         try {
-          // Use addFrame to create a cast with the mini app embedded
-          if (window.sdk.actions.addFrame) {
-            await window.sdk.actions.addFrame({
-              text: shareText,
-              frameUrl: APP_URL
-            });
-            console.log('✅ Cast created with addFrame');
-          } else if (window.sdk.actions.openUrl) {
-            // Fallback: Use openUrl with Warpcast composer
-            const castUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(APP_URL)}`;
-            await window.sdk.actions.openUrl(castUrl);
-            console.log('✅ Opened composer with openUrl');
-          }
+          console.log('🔄 Opening Farcaster composer with SDK...');
+          await window.sdk.actions.openUrl(castUrl);
+          console.log('✅ Composer opened with SDK');
           
-          showStatusMessage('✅ Cast created! Mini app will be minimized.', 'success');
+          showStatusMessage('✅ Composer opened! Your mini app will appear as a clickable card.', 'success');
           shareToFarcasterBtn.disabled = false;
           shareToFarcasterBtn.textContent = '📢 Share on Farcaster';
-          
-          // Close/minimize the mini app frame after sharing
-          if (window.sdk.actions.close) {
-            setTimeout(() => {
-              window.sdk.actions.close();
-              console.log('✅ Mini app closed');
-            }, 1500);
-          }
           return;
         } catch (err) {
-          console.error('Farcaster SDK share error:', err);
+          console.error('Farcaster SDK openUrl error:', err);
           // Fall through to manual share
         }
       }
       
-      // Fallback: Open composer with embedded link
-      // The embeds[] parameter creates a clickable card that opens the mini app
-      const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(APP_URL)}`;
-      
-      // Open in new window
-      window.open(farcasterUrl, '_blank');
+      // Fallback: Open composer in new window (for standalone web or if SDK fails)
+      console.log('🔄 Opening composer in new window...');
+      window.open(castUrl, '_blank');
       
       showStatusMessage('✅ Farcaster opened! Your mini app link will appear as a clickable card in the cast.', 'success');
       
