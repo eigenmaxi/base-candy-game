@@ -1138,45 +1138,24 @@ document.addEventListener("DOMContentLoaded", () => {
       // Create contract instance using window.ethers
       const contract = new window.ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
-      // Estimate gas first to check if contract exists and function is callable
-      try {
-        const gasEstimate = await contract.mintScorecard.estimateGas(
-          score,
-          playerName,
-          playerRank,
-          currentCompliment,
-          { value: 0 } // Try with no value first
-        );
-        console.log('Gas estimate:', gasEstimate.toString());
-      } catch (estimateError) {
-        console.error('Gas estimation failed:', estimateError);
-        
-        // Check if contract exists
-        const code = await provider.getCode(CONTRACT_ADDRESS);
-        if (code === '0x') {
-          throw new Error('Contract not deployed on Base network. Please verify the contract address.');
-        }
-        
-        // If it's a revert error, the contract might not have the function or requires payment
-        if (estimateError.message.includes('missing revert data') || estimateError.code === 'CALL_EXCEPTION') {
-          throw new Error('Contract function not available or incorrect parameters. Please check contract deployment.');
-        }
-        
-        throw estimateError;
-      }
-
-      // Call mintScorecard function
+      console.log('🔄 Calling mintScorecard with:', { score, playerName, playerRank, currentCompliment });
+      
+      // Call mintScorecard function directly (skip gas estimation for Farcaster wallet compatibility)
       const tx = await contract.mintScorecard(
         score,
         playerName,
         playerRank,
         currentCompliment
       );
+      
+      console.log('✅ Transaction sent:', tx.hash);
 
       showStatusMessage('Transaction submitted! Waiting for confirmation...', 'success');
 
       // Wait for transaction to be mined
       const receipt = await tx.wait();
+      
+      console.log('✅ Transaction confirmed:', receipt.hash);
 
       // Get token ID from event
       const event = receipt.logs?.find(log => {
@@ -1192,6 +1171,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (event) {
         const parsed = contract.interface.parseLog(event);
         tokenId = parsed.args.tokenId?.toString() || 'Unknown';
+        console.log('✅ Token ID:', tokenId);
       }
 
       showStatusMessage(
@@ -1210,12 +1190,12 @@ document.addEventListener("DOMContentLoaded", () => {
         errorMsg += 'Transaction rejected by user';
       } else if (error.code === -32603 || error.message.includes('insufficient funds')) {
         errorMsg += 'Insufficient funds for gas';
-      } else if (error.message.includes('Contract not deployed')) {
-        errorMsg = error.message;
-      } else if (error.message.includes('Contract function not available')) {
-        errorMsg = error.message;
+      } else if (error.message.includes('missing revert data')) {
+        errorMsg += 'Contract call failed. Make sure you have enough ETH for gas and the contract is properly deployed.';
+      } else if (error.message.includes('user rejected')) {
+        errorMsg += 'Transaction rejected by user';
       } else {
-        errorMsg += error.message || 'Unknown error occurred';
+        errorMsg += error.message || error.reason || 'Unknown error occurred';
       }
       
       showStatusMessage(errorMsg, 'error');
