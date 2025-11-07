@@ -1,0 +1,28 @@
+{
+  "accountAssociation": {
+    "header": "eyJmaWQiOjI2NjIzMiwidHlwZSI6ImF1dGgiLCJrZXkiOiIweDQxOWYyM2U1Yzk4NzQ3YkVCZEFGNkJhNkRDMzc0QkYwMjI4MDVhODIifQ",
+    "payload": "eyJkb21haW4iOiJiYXNlLWNhbmR5LWdhbWUudmVyY2VsLmFwcCJ9",
+    "signature": "NmSFC39/G8mFUjG0I/9QHwg6GxTky1soVsyaYD+6GMADdkJtqrQIRIcsuu44sIaVgjN2M7cH4zwMuXNRj/WHiRw="
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Base Candy",
+    "homeUrl": "https://base-candy-game.vercel.app",
+    "iconUrl": "https://base-candy-game.vercel.app/icon.png",
+    "splashImageUrl": "https://base-candy-game.vercel.app/splash.png",
+    "splashBackgroundColor": "#001133",
+    "subtitle": "Match, Play, Mint on Base",
+    "description": "Match your favorite Layer 2 logos in this addictive puzzle game! Compete on the leaderboard and mint your scorecard as an NFT on Base blockchain. The sweetest crypto gaming experience!",
+    "screenshotUrls": [
+      "https://base-candy-game.vercel.app/screenshot1.png",
+      "https://base-candy-game.vercel.app/preview.png"
+    ],
+    "primaryCategory": "games",
+    "tags": ["game", "puzzle", "nft", "base", "crypto", "web3", "leaderboard"],
+    "heroImageUrl": "https://base-candy-game.vercel.app/og-image.png",
+    "tagline": "Match sweet. Mint sweeter.",
+    "ogTitle": "Base Candy - Match & Mint on Base",
+    "ogDescription": "The sweetest crypto puzzle game! Match L2 logos, climb the leaderboard, and mint your scorecard NFT on Base.",
+    "ogImageUrl": "https://base-candy-game.vercel.app/og-image.png"
+  }
+}

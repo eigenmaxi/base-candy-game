@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#001133" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <title>Base Candy 🍬 | Match, Play, Mint on Base</title>
+
+    <!-- FARCASTER MINIAPP EMBED METADATA -->
+    <meta
+      name="fc:miniapp"
+      content='{"version":"next","imageUrl":"https://base-candy-game.vercel.app/og-image.png","button":{"title":"Play Base Candy","action":{"type":"launch_miniapp","name":"Base Candy","url":"https://base-candy-game.vercel.app"}}}'
+    />
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Base Candy - Match & Mint on Base" />
+    <meta
+      property="og:description"
+      content="Match your favorite L2 logos, compete on the leaderboard, and mint your scorecard NFT on Base. The sweetest crypto puzzle game!"
+    />
+    <meta
+      property="og:image"
+      content="https://base-candy-game.vercel.app/og-image.png"
+    />
+    <meta property="og:url" content="https://base-candy-game.vercel.app" />
+    <meta property="og:site_name" content="Base Candy" />
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Base Candy - Match & Mint on Base" />
+    <meta
+      name="twitter:description"
+      content="Match your favorite L2 logos, compete on the leaderboard, and mint your scorecard NFT on Base!"
+    />
+    <meta
+      name="twitter:image"
+      content="https://base-candy-game.vercel.app/og-image.png"
+    />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="icon.png" />
+    <link rel="apple-touch-icon" href="icon.png" />
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <!-- Start Screen -->
+    <div id="startScreen">
+      <div class="start-content">
+        <img src="images/base.png" class="start-base-logo" alt="Base logo" />
+        <h1>Base Candy 🍬</h1>
+        <p class="sub">Welcome to the sweetest Base community challenge</p>
+        <p class="sub small">
+          Match your favorite Layer 2 logos and climb the Based leaderboard.
+        </p>
+        <button id="startButton">Start Game</button>
+        <div id="leaderboardPreview"></div>
+      </div>
+    </div>
+
+    <!-- Countdown Overlay -->
+    <div id="countdownOverlay" class="hidden">
+      <div class="countdown-content">
+        <div id="countdownNumber">3</div>
+      </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="gameBoardContainer" class="hidden">
+      <div id="topbar">
+        <div id="scoreBoard">Score: <span id="score">0</span></div>
+        <div id="timerBoard">Time: <span id="time">60</span>s</div>
+        <div id="controls">
+          <button id="pauseBtn">Pause</button>
+          <button id="muteBtn">🔊</button>
+          <button id="resetBtn">Reset</button>
+        </div>
+      </div>
+
+      <div id="gameBoard" aria-label="game board"></div>
+    </div>
+
+    <!-- End Screen -->
+    <div id="endScreen" class="hidden">
+      <div class="start-content">
+        <img src="images/base.png" class="start-base-logo" alt="Base logo" />
+        <h1>Game Over</h1>
+        <p class="sub" id="compliment">Nice try!</p>
+        <p class="sub">Your score: <span id="finalScore">0</span></p>
+
+        <!-- Name Input Section -->
+        <div id="nameInputSection" class="name-input-section">
+          <input
+            type="text"
+            id="playerNameInput"
+            placeholder="Enter your name"
+            maxlength="20"
+            class="name-input"
+          />
+          <button id="saveNameBtn" class="save-name-btn">Save Score</button>
+        </div>
+
+        <!-- Action Buttons Section -->
+        <div id="actionButtons" class="hidden action-buttons">
+          <button id="shareToFarcasterBtn" class="action-btn farcaster-btn">
+            📢 Share on Farcaster
+          </button>
+          <button id="mintNFTBtn" class="action-btn mint-btn">
+            🎨 Mint Scorecard NFT
+          </button>
+          <div id="walletStatus" class="wallet-status"></div>
+        </div>
+
+        <div id="leaderboard"></div>
+        <button id="restartButton">Play Again</button>
+      </div>
+    </div>
+
+    <!-- Hidden canvas for scorecard generation -->
+    <canvas
+      id="scorecardCanvas"
+      width="1000"
+      height="1400"
+      style="display: none"
+    ></canvas>
+
+    <!-- Audio elements for sound effects and music -->
+    <audio id="bgMusic" loop>
+      <source src="sounds/background-music.mp3" type="audio/mpeg" />
+      <source src="sounds/background-music.ogg" type="audio/ogg" />
+    </audio>
+    <audio id="matchSound" preload="auto">
+      <source src="sounds/match.mp3" type="audio/mpeg" />
+      <source src="sounds/match.ogg" type="audio/ogg" />
+    </audio>
+    <audio id="specialSound" preload="auto">
+      <source src="sounds/special.mp3" type="audio/mpeg" />
+      <source src="sounds/special.ogg" type="audio/ogg" />
+    </audio>
+    <audio id="comboSound" preload="auto">
+      <source src="sounds/combo.mp3" type="audio/mpeg" />
+      <source src="sounds/combo.ogg" type="audio/ogg" />
+    </audio>
+    <audio id="invalidSound" preload="auto">
+      <source src="sounds/invalid.mp3" type="audio/mpeg" />
+      <source src="sounds/invalid.ogg" type="audio/ogg" />
+    </audio>
+    <audio id="winSound" preload="auto">
+      <source src="sounds/win.mp3" type="audio/mpeg" />
+      <source src="sounds/win.ogg" type="audio/ogg" />
+    </audio>
+
+    <!-- Load Farcaster Mini App SDK -->
+    <script type="module">
+      import sdk from "https://esm.sh/@farcaster/frame-sdk@0.2.0";
+      window.sdk = sdk;
+
+      // Initialize SDK and context
+      (async () => {
+        try {
+          const context = await sdk.context;
+          window.farcasterContext = context;
+          console.log("✅ Farcaster SDK context loaded:", context);
+
+          // Signal app is ready
+          await sdk.actions.ready();
+          console.log("✅ App ready signal sent");
+        } catch (err) {
+          console.log("Not in Farcaster context or SDK error:", err);
+        }
+      })();
+    </script>
+
+    <!-- Load ethers.js v6 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+
+    <!-- Load main game script -->
+    <script src="main.js"></script>
+  </body>
+</html>
