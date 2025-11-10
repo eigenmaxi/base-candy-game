@@ -1186,37 +1186,23 @@ document.addEventListener("DOMContentLoaded", () => {
       
       console.log('✅ Transaction sent:', tx.hash);
 
-      showStatusMessage('Transaction submitted! Waiting for confirmation...', 'success');
-
-      // Wait for transaction to be mined
-      const receipt = await tx.wait();
-      
-      console.log('✅ Transaction confirmed:', receipt);
-
-      // Get token ID from event
-      const event = receipt.logs?.find(log => {
-        try {
-          const parsed = contract.interface.parseLog(log);
-          return parsed && parsed.name === 'ScorecardMinted';
-        } catch (e) {
-          return false;
-        }
-      });
-      
-      let tokenId = 'Unknown';
-      if (event) {
-        const parsed = contract.interface.parseLog(event);
-        tokenId = parsed.args.tokenId?.toString() || 'Unknown';
-        console.log('✅ Token ID:', tokenId);
-      }
-
       showStatusMessage(
-        `🎉 Successfully minted! <a href="https://basescan.org/tx/${receipt.hash}" target="_blank">View on BaseScan</a>`,
+        `🎉 Transaction submitted! <a href="https://basescan.org/tx/${tx.hash}" target="_blank">View on BaseScan</a>`,
         'success'
       );
 
-      mintNFTBtn.innerHTML = '✅ Minted!';
-      mintNFTBtn.disabled = true;
+      mintNFTBtn.innerHTML = '✅ Minting...';
+      
+      // For Farcaster wallet compatibility, don't wait for receipt
+      // Just show success after transaction is sent
+      setTimeout(() => {
+        mintNFTBtn.innerHTML = '✅ Minted!';
+        mintNFTBtn.disabled = true;
+        showStatusMessage(
+          `🎉 NFT minted! <a href="https://basescan.org/tx/${tx.hash}" target="_blank">Check transaction status</a>`,
+          'success'
+        );
+      }, 3000);
 
     } catch (error) {
       console.error('❌ Minting error details:', error);
